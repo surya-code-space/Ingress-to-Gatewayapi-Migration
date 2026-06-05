@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../assets/speaker.png" alt="Jaya Surya S" width="140" style="border-radius:50%; margin-bottom:12px"/>
+<img src="assets/speaker.png" alt="Jaya Surya S" width="140" style="border-radius:50%; margin-bottom:12px"/>
 
 # Jaya Surya S
 
