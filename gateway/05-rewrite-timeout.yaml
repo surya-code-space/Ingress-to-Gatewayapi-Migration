@@ -1,0 +1,45 @@
+# URL Rewrite + Timeout — practical enterprise features
+# Rewrites /v1/products → /api before hitting the backend
+# Sets a 3s timeout per request (enforced at the gateway)
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gpen-route
+spec:
+  parentRefs:
+  - name: gpen-gateway
+  hostnames: ["gpen.local"]
+  rules:
+  - matches:
+    - path: { type: PathPrefix, value: / }
+    backendRefs:
+    - name: gpen-web
+      port: 80
+  # Rewrite /v1/products → /api  +  3s timeout
+  - matches:
+    - path: { type: PathPrefix, value: /v1/products }
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /api
+    timeouts:
+      request: 3s
+      backendRequest: 2s
+    backendRefs:
+    - name: gpen-api-v1
+      port: 80
+  # Normal /api still works
+  - matches:
+    - path: { type: PathPrefix, value: /api }
+    timeouts:
+      request: 3s
+    backendRefs:
+    - name: gpen-api-v1
+      port: 80
+      weight: 90
+    - name: gpen-api-v2
+      port: 80
+      weight: 10

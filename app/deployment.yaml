@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpen-web
+  labels: { app: gpen-web }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: gpen-web } }
+  template:
+    metadata: { labels: { app: gpen-web } }
+    spec:
+      containers:
+      - name: web
+        image: hashicorp/http-echo:latest
+        args: ["-text=🌐 Web Frontend — served by: HTTPRoute (Gateway API)"]
+        ports: [{ containerPort: 5678 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpen-api-v1
+  labels: { app: gpen-api-v1 }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: gpen-api-v1 } }
+  template:
+    metadata: { labels: { app: gpen-api-v1 } }
+    spec:
+      containers:
+      - name: api
+        image: hashicorp/http-echo:latest
+        args: ["-text=🔵 API v1 — Stable (weight: 90%)"]
+        ports: [{ containerPort: 5678 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpen-api-v2
+  labels: { app: gpen-api-v2 }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: gpen-api-v2 } }
+  template:
+    metadata: { labels: { app: gpen-api-v2 } }
+    spec:
+      containers:
+      - name: api
+        image: hashicorp/http-echo:latest
+        args: ["-text=🟢 API v2 — Canary (weight: 10%)"]
+        ports: [{ containerPort: 5678 }]

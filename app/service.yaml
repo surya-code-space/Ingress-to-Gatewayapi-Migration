@@ -1,0 +1,24 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpen-web
+spec:
+  selector: { app: gpen-web }
+  ports: [{ port: 80, targetPort: 5678 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpen-api-v1
+spec:
+  selector: { app: gpen-api-v1 }
+  ports: [{ port: 80, targetPort: 5678 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpen-api-v2
+spec:
+  selector: { app: gpen-api-v2 }
+  ports: [{ port: 80, targetPort: 5678 }]

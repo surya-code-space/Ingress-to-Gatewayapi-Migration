@@ -1,0 +1,79 @@
+# Cross-namespace routing demo
+# Gateway API lets HTTPRoute in 'default' reach a Service in 'staging'
+# Ingress cannot do this at all — it's namespace-scoped only.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpen-api-v2-staging
+  namespace: staging
+  labels: { app: gpen-api-v2 }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: gpen-api-v2 } }
+  template:
+    metadata: { labels: { app: gpen-api-v2 } }
+    spec:
+      containers:
+      - name: api
+        image: hashicorp/http-echo:latest
+        args: ["-text=🟢 API v2 — STAGING namespace (cross-namespace routing!)"]
+        ports: [{ containerPort: 5678 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gpen-api-v2
+  namespace: staging
+spec:
+  selector: { app: gpen-api-v2 }
+  ports: [{ port: 80, targetPort: 5678 }]
+---
+# ReferenceGrant: explicit consent from 'staging' to allow 'default' to route here
+# This is the security model — the TARGET namespace must opt in
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-from-default
+  namespace: staging
+spec:
+  from:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    namespace: default
+  to:
+  - group: ""
+    kind: Service
+---
+# HTTPRoute with backend in a DIFFERENT namespace
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gpen-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: gpen-gateway
+  hostnames: ["gpen.local"]
+  rules:
+  - matches:
+    - path: { type: PathPrefix, value: / }
+    backendRefs:
+    - name: gpen-web
+      port: 80
+  - matches:
+    - path: { type: PathPrefix, value: /api }
+    backendRefs:
+    - name: gpen-api-v1
+      namespace: default
+      port: 80
+      weight: 80
+    - name: gpen-api-v2
+      namespace: staging          # ← cross-namespace reference
+      port: 80
+      weight: 20

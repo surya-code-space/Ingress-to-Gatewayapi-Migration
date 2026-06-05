@@ -1,0 +1,33 @@
+# Header-based routing — A/B testing without any Ingress annotations
+# Requests with X-Version: v2 → gpen-api-v2 (new feature)
+# All other requests           → gpen-api-v1 (stable)
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gpen-route
+spec:
+  parentRefs:
+  - name: gpen-gateway
+  hostnames: ["gpen.local"]
+  rules:
+  - matches:
+    - path: { type: PathPrefix, value: / }
+    backendRefs:
+    - name: gpen-web
+      port: 80
+  # Rule 1: header match wins first → v2
+  - matches:
+    - path: { type: PathPrefix, value: /api }
+      headers:
+      - name: "X-Version"
+        value: "v2"
+    backendRefs:
+    - name: gpen-api-v2
+      port: 80
+  # Rule 2: default → v1
+  - matches:
+    - path: { type: PathPrefix, value: /api }
+    backendRefs:
+    - name: gpen-api-v1
+      port: 80

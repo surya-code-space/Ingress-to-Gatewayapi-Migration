@@ -1,0 +1,21 @@
+# Step 1 — GatewayClass (which controller handles this Gateway)
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: gpen-gateway
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+# Step 2 — Gateway (the actual load balancer, owned by platform team)
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gpen-gateway
+  namespace: default
+spec:
+  gatewayClassName: gpen-gateway
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80

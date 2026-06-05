@@ -1,0 +1,27 @@
+# The OLD way — nginx Ingress
+# Flat, annotation-heavy, no traffic splitting, no CORS natively
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gpen-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: gpen.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: gpen-web
+            port: { number: 80 }
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: gpen-api-v1
+            port: { number: 80 }
