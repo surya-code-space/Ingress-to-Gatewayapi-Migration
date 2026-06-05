@@ -4,7 +4,7 @@
 
 # Jaya Surya S
 
-**Platform Engineer · Ford Motor Company**
+**Platform Engineer**
 
 Managing Kubernetes routing infrastructure across **1500+ engineering teams**
 Speaker · GPEN Q2 2026 · Gateway API Migration Workshop
